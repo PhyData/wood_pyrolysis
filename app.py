@@ -18,6 +18,7 @@ external_stylesheets = [
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 app.title = "Wood pyrolysis dynamics"
+server = app.server
 
 data = pd.read_csv('Res_rho_char.csv')
 
