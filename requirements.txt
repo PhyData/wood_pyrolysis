@@ -2,4 +2,3 @@ pandas
 dash
 gunicorn
 plotly
-time
