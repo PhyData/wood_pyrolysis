@@ -2,3 +2,4 @@ pandas
 dash
 gunicorn
 plotly
+dash-gif-component
