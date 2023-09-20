@@ -34,8 +34,8 @@ app.layout = html.Div([
     ], className="header"),
     html.Div([
     gif.GifPlayer(
-        gif='assets/my-gif.gif',
-        still='assets/my-still.png',)
+        gif='assets/wood.gif',
+        still='assets/.png',)
     ])
     html.Div(children=[
         dcc.Graph(
