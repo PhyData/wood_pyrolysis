@@ -37,7 +37,7 @@ app.layout = html.Div([
     gif.GifPlayer(
         gif='assets/wood.gif',
         still='assets/still.png',)
-    ])
+    ]),
     html.Div(children=[
         dcc.Graph(
             id="rho-char",
