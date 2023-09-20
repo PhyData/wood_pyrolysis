@@ -32,6 +32,7 @@ app.layout = html.Div([
         html.H1('Wood pyrolysis dynamics, rho_char', className="header-title"),
         html.P(children=("We study de charcoal density with time."), className="header-description",),
     ], className="header"),
+    html.P(<img src="wood.gif" alt="gif de algo">,),
     html.Div(children=[
         dcc.Graph(
             id="rho-char",
