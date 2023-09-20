@@ -35,7 +35,7 @@ app.layout = html.Div([
     html.Div([
     gif.GifPlayer(
         gif='assets/wood.gif',
-        still='assets/.png',)
+        still='assets/still.png',)
     ])
     html.Div(children=[
         dcc.Graph(
