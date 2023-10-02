@@ -4,8 +4,6 @@ import dash_html_components as html
 import dash_gif_component as gif
 import pandas as pd
 import plotly.graph_objs as go
-from dash.dependencies import Input, Output, State
-import time
 
 external_stylesheets = [
     {
@@ -18,60 +16,51 @@ external_stylesheets = [
 ]
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-app.title = "Wood pyrolysis dynamics"
 server = app.server
+app.title = "Wood pyrolysis dynamics" 
 
-data = pd.read_csv('Res_rho_char.csv')
+data_rho_char = pd.read_csv('Res_rho_char.csv')
+data_R_kin = pd.read_csv('Res_R_kin.csv')
 
-def time_slide(i):
-    col_i = data.iloc[:, i]
+def time_slide_rho_char(i):
+    col_i = data_rho_char.iloc[:,i]
     return col_i
 
-app.layout = html.Div([
-    html.Div([
-        html.P(children=("🪵 🔥 🪵"), className="header-emoji",),
-        html.H1('Wood pyrolysis dynamics, rho_char', className="header-title"),
-        html.P(children=("We study de charcoal density with time."), className="header-description",),
-    ], className="header"),
-    html.Div([
-    gif.GifPlayer(
-        gif='assets/wood.gif',
-        still='assets/still.png',)
-    ]),
-    html.Div(children=[
-        dcc.Graph(
+def time_slide_r_kin(i):
+    col_i = data_R_kin.iloc[:,i]
+    return col_i
+
+
+app.layout = html.Div([html.Div([
+	html.P(children=("🪵 🔥 🪵"),className="header-emoji",),
+    html.H1('Wood pyrolysis dynamics', className="header-title"),        
+    html.P(children=("We simulate the dynamics of a wood stick in time."),className="header-description",), 
+            ],className="header"), 
+    
+    html.P(children=[' We can select an specific value of time using the slider below the plots. '],className="body"),
+
+    #Grafico 1 (izquierda)
+    html.Div(
+            children=[dcc.Graph(
             id="rho-char",
             config={"displayModeBar": True},
-            figure={
-                "data": [
-                    {
-                        "x": list(range(0, int(len(data.columns) / 6))),
-                        "y": list(time_slide(99)),
-                        "type": "lines",
-                        "hovertemplate": (
-                            "$%{y:.3f}<extra></extra>"
-                        ),
-                    },
-                ],
-                "layout": {
-                    "title": {
-                        "text": "rho_char",
-                        "x": 0.01,
-                        "xanchor": "left",
-                    },
-                    "xaxis": {"fixedrange": True},
-                    "yaxis": {"fixedrange": True},
-                    "colorway": ["#3fb817"],
-                },
-            },
         ),
-    ]),
+    ],style={'width': '50%', 'display': 'inline-block'} ,className="grafico"),
+    #Grafico 2 (derecha)
+    html.Div(
+            children=[dcc.Graph(
+            id="r-kin",
+            config={"displayModeBar": True},
+        ),
+    ],style={'width': '50%', 'display': 'inline-block'} ,className="grafico"),
+   
+    html.P(children=['Select the desire time.'],className="body"),
+    #Slider            
     html.Div([
-        html.Button('Play', id='play-button'),
         dcc.Slider(
             id='my-slider',
             min=0,
-            max=len(data.columns) - 1,
+            max=1000,
             step=1,
             value=0,
             marks={
@@ -87,84 +76,89 @@ app.layout = html.Div([
                 900: '900',
                 1000: '1000'
             },
+            tooltip={"placement": "bottom", "always_visible": True}
         ),
-        dcc.Interval(id='interval-component', interval=100, n_intervals=0),
     ]),
+
+    html.P(children=[' We dynamically plot the evolution of the variables of interest for each slide of time. '],className="body"),
+
     html.Div([
-        dcc.Graph(
-            id='heatmap',
-            figure={
-                'data': [{
-                    'z': data.values.tolist(),
-                    'type': 'heatmap',
-                    'colorscale': 'YlOrRd'
-                }],
-        "layout": {
-            "title": {
-                "text": "Heatmap of charcoal density x vs time",
-                "x": 0.01,
-                "xanchor": "left",
-            },
-            "xaxis": {"title": "x", "fixedrange": True,"range": [0, 200],},
-            "yaxis": {"title": "Time [...] ", "fixedrange": True, "range": [0, 0.06],},
-            #"colorway": ["#3fb817"],
-        },
-            },
-        ),
-    ]),
-])
+    gif.GifPlayer(
+        gif='assets/wood.gif',
+        still='assets/still.png',)
+    ],style={'width': '49%', 'display': 'inline-block'} ,className="grafico"),
+
+    html.Div([
+    gif.GifPlayer(
+        gif='assets/wood.gif',
+        still='assets/still.png',)
+    ],style={'width': '49%', 'display': 'inline-block'} ,className="grafico"),    
+   
+    
+   
+   
+    #html.Div([
+    #    dcc.Graph(
+    #        id='heatmap',
+    #        figure={
+    #            'data': [{
+    #                'z': data.values.tolist(),
+    #                'type': 'heatmap',
+    #                'colorscale': 'Viridis'
+    #            }],
+    #        },
+    #    ),
+    #]),
+]) 
 
 @app.callback(
-    Output('my-slider', 'value'),
-    Output('rho-char', 'figure'),
-    Input('play-button', 'n_clicks'),
-    Input('interval-component', 'n_intervals'),
-    State('my-slider', 'value')
-)
-def update_slider_and_plot(n_clicks, n_intervals, current_value):
-    ctx = dash.callback_context
-    if not ctx.triggered:
-        prop_id = 'No inputs'
-    else:
-        prop_id = ctx.triggered[0]['prop_id']
-
-    if prop_id == 'play-button.n_clicks':
-        # Increment the slider value when the "Play" button is clicked
-        next_value = current_value + 1
-        if next_value >= len(data.columns):
-            next_value = 0  # Reset to the beginning if we reach the end
-    elif prop_id == 'interval-component.n_intervals':
-        # Automatically increment the slider value at regular intervals
-        next_value = current_value + 1
-        if next_value >= len(data.columns):
-            next_value = 0  # Reset to the beginning if we reach the end
-    else:
-        # Default value when the page loads
-        next_value = 0
-
-    # Update the y-values of the 'rho-char' plot
-    updated_figure = {
-        "data": [
-            {
-                "x": list(range(0, int(len(data.columns) /6))),
-                "y": list(time_slide(next_value)),
-                "type": "lines",
-                "hovertemplate": "$%{y:.3f}<extra></extra>",
-            }
-        ],
+    dash.dependencies.Output('rho-char', 'figure'),
+    [dash.dependencies.Input('my-slider', 'value')])
+  
+def update_rho_char1(value):
+    rho_char1_figure = {
+        'data': [{
+            "x": list(range(0, int(len(data_rho_char.columns)/5))),
+            "y": list(time_slide_rho_char(value)),
+            "type": "lines",
+        }],
         "layout": {
             "title": {
                 "text": "Density of charcoal",
                 "x": 0.01,
                 "xanchor": "left",
             },
-            "xaxis": {"title": "x", "fixedrange": True},
-            "yaxis": {"title": "Density [kg/m^3]", "fixedrange": True, "range": [0, 0.06],},
+            "xaxis": {"title": "First 200 x's", "fixedrange": True},
+            "yaxis": {"title": "Density [kg/m^3]", "fixedrange": True, "range": [0, 0.06],
+            },
             "colorway": ["#3fb817"],
         },
     }
+    return rho_char1_figure
 
-    return next_value, updated_figure
+@app.callback(
+    dash.dependencies.Output('r-kin', 'figure'),
+    [dash.dependencies.Input('my-slider', 'value')])
+def update_r_kin(value):
+    r_kin_figure = {
+        'data': [{
+            "x": list(range(0, int(len(data_R_kin.columns)/5))),
+            "y": list(time_slide_r_kin(value)),
+            "type": "lines",
+        }],
+        "layout": {
+            "title": {
+                "text": "R kinetic",
+                "x": 0.01,
+                "xanchor": "left",
+            },
+            "xaxis": {"title": "First 200 x's", "fixedrange": True},
+            "yaxis": {"title": "Arreglar unidades [kg/m^3]", "fixedrange": True, "range": [0, 0.000015],
+            },
+            "colorway": ["#3fb817"],
+        },
+    }    
+    return r_kin_figure 
 
 if __name__ == '__main__':
     app.run_server(debug=True)

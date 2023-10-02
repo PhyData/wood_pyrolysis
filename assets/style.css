@@ -1,6 +1,8 @@
 body {
     font-family: "Lato", sans-serif;
     margin: 0;
+    font-size: 30px;
+    text-align: center;
     background-color: #F7F7F7;
 }
 
@@ -74,4 +76,11 @@ body {
     margin-bottom: 6px;
     font-weight: bold;
     color: #079A82;
+}
+
+.grafico {
+    width: 50%; 
+    float: left; 
+    padding: 20px; 
+    box-sizing: border-box; 
 }
